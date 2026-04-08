@@ -1,10 +1,11 @@
 provider "aws" {
   region = "us-east-1"
+  profile = default
 }
-resource "aws_instance" "example" {
-  ami                    = "ami-02dfbd4ff395f2a1b"
+resource "aws_launch_configuration" "example" {
+  image_id                    = "ami-02dfbd4ff395f2a1b"
   instance_type          = "t3.micro"
-  vpc_security_group_ids = [aws_security_group.instance.id]
+  security_groups = [aws_security_group.instance.id]
   associate_public_ip_address = true
 
   user_data = <<-EOF
@@ -19,12 +20,9 @@ cd /home/ec2-user
 echo "Hi there mate" > /var/www/html/index.html
 
 EOF
-
-  user_data_replace_on_change = true
-
-  tags = {
-    Name = "terraform-example"
-  }
+lifecycle {
+  create_before_destroy = true
+}
 }
 
 resource "aws_security_group" "instance" {
@@ -47,4 +45,15 @@ resource "aws_security_group" "instance" {
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_autoscaling_group" "example" {
+launch_configuration = aws_launch_configuration.example.name
+min_size = 2
+max_size = 10
+tag {
+  key ="Name"
+  value = "terraform_asg_example"
+  propagate_at_launch = true
+}
 }

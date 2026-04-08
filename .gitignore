@@ -1,3 +1,9 @@
-.terraform
-*.tfstate
-*.tfstate.backup
+# Ignore all .terraform directories anywhere
+**/.terraform/
+
+# Ignore all Terraform state files anywhere
+**/*.tfstate
+**/*.tfstate.backup
+
+# Optional: ignore lock files if you want
+**/.terraform.lock.hcl
